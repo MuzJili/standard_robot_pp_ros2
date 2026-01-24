@@ -218,5 +218,7 @@ bool verify_CRC16_check_sum(std::vector<uint8_t> & pchMessage)
 
   return (
     (w_expected & 0xff) == pchMessage[dw_length - 2] &&
-    ((w_expected >> 8) & 0xf );
+    ((w_expected >> 8) & 0xff) == pchMessage[dw_length - 1]);
+}
+
 }  // namespace crc16
