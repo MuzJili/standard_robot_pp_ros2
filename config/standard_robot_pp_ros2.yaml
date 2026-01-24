@@ -1,0 +1,59 @@
+standard_robot_pp_ros2:
+  ros__parameters:
+    device_name: /dev/ttyACM0
+    baud_rate: 115200
+    flow_control: none
+    parity: none
+    stop_bits: "1"
+    set_detector_color: false
+    record_rosbag: false
+    debug: false
+    rotate_mode: 1
+
+joint_state_publisher:
+  ros__parameters:
+    use_sim_time: false
+    rate: 200
+    source_list: ["serial/gimbal_joint_state"]
+    offset_timestamp: 0.0
+
+robot_state_publisher:
+  ros__parameters:
+    use_sim_time: false
+    publish_frequency: 200.0
+
+imu_transformer_node:
+  ros__parameters:
+    use_sim_time: false
+    target_frame: "gimbal_yaw"  # 目标坐标系
+    source_frame: "front_mid360" 
+
+imu_filter_madgwick_node:
+  ros__parameters:
+    use_sim_time: false
+    # 磁力计设置
+    use_mag: false
+    # 世界坐标系下的重力向量 [m/s^2]
+    gravity_constant: 9.81
+    # 滤波器增益参数
+    gain: 0.1
+    # 发布TF变换
+    publish_tf: false
+    fixed_frame: "imu_filter"
+    # 移除重力加速度对线性加速度的影响
+    remove_gravity_acceleration: false
+    # 坐标系设置
+    world_frame: "enu"         # 世界坐标系：东-北-天
+    imu_frame: "gimbal_yaw"    # IMU数据所在的坐标系
+    
+    # 传感器数据统计（用于初始化）
+    stat:
+      # 初始化时的静止时间（秒）
+      stationary_time: 1.0
+      # 加速度计噪声方差
+      acceleration_var: 0.01
+      # 磁力计噪声方差（未使用）
+      magnetic_var: 0.0
+    
+    # 发布频率（可选）
+    publish_rate: 200.0
