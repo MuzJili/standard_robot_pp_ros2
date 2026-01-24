@@ -53,7 +53,7 @@ StandardRobotPpRos2Node::StandardRobotPpRos2Node(const rclcpp::NodeOptions & opt
   tf_broadcaster_ = std::make_unique<tf2_ros::TransformBroadcaster>(*this);
 
   // Param client
-  for (auto client : getClients(this->shared_from_this())) {
+  for (auto client : getClients(this)) {
     std::string name = client->get_service_name();
     set_mode_clients_.emplace(name, client);
     RCLCPP_INFO(get_logger(), "Create client for service: %s", name.c_str());
