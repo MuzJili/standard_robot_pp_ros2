@@ -23,12 +23,12 @@ bool verify_check_sum(std::vector<uint8_t> & pchMessage)
   }
   uint16_t cSUm = 0;
   uint32_t dwLength = pchMessage.size();
-  for (uint32_t i = 0; i < dwLength - 2; i++) {
+  for (uint32_t i = 0; i < dwLength - 3; i++) {
     cSUm += pchMessage[i];
   }
 
-  uint16_t fSum = (static_cast<uint16_t>(pchMessage[dwLength - 2]) & 0xFF) |
-                         (static_cast<uint16_t>(pchMessage[dwLength - 1]) << 8);
+  uint16_t fSum = (static_cast<uint16_t>(pchMessage[dwLength - 3]) & 0xFF) |
+                         (static_cast<uint16_t>(pchMessage[dwLength - 2]) << 8);
 
   return cSUm == fSum;
 }
@@ -36,11 +36,11 @@ bool verify_check_sum(std::vector<uint8_t> & pchMessage)
 void append_check_sum(uint8_t * pchMessage, uint32_t dwLength)
 {
   uint16_t cSUm = 0;
-  for (uint32_t i = 0; i < dwLength - 2; i++) {
+  for (uint32_t i = 0; i < dwLength - 3; i++) {
     cSUm += pchMessage[i];
   }
-  pchMessage[dwLength] = (uint8_t)(cSUm & 0xFF);
-  pchMessage[dwLength + 1] = (uint8_t)((cSUm >> 8) & 0xFF);
+  pchMessage[dwLength - 3] = (uint8_t)(cSUm & 0xFF);
+  pchMessage[dwLength - 2] = (uint8_t)((cSUm >> 8) & 0xFF);
 }
 }  // namespace checksum
 

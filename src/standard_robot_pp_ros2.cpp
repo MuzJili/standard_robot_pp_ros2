@@ -331,8 +331,8 @@ void StandardRobotPpRos2Node::receiveData()
       data_buf.insert(data_buf.begin(), sof[0]);
 
       bool checksum_ok = checksum::verify_check_sum(data_buf);
-      if (!checksum_ok) {
-        RCLCPP_ERROR(get_logger(), "Check sum error! ");
+      if (!checksum_ok && data_buf[63] != SOF_TAIL) {
+        RCLCPP_ERROR(get_logger(), "Check sum or tail_frame 0x%x error! ", data_buf[63]);
       }
 
       ReceiveTestData received_test_data = fromVector<ReceiveTestData>(data_buf);
@@ -452,6 +452,7 @@ void StandardRobotPpRos2Node::sendData()
   RCLCPP_INFO(get_logger(), "Start send Data!");
 
   send_test_data_.frame_header = SOF_SEND;
+  send_test_data_.frame_tail = SOF_TAIL;
   send_test_data_.check_sum = 0;
   send_test_data_.data.fire_advice = 0;
   send_test_data_.data.major_number = 0;

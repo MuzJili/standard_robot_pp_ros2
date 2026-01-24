@@ -95,10 +95,11 @@ struct ReceiveTestData
     uint8_t hp_deduction_reason;
     float yaw_diff;
   
-    uint8_t reserve[30];
+    uint8_t reserve[29];
   } __attribute__((packed)) data;
 
   uint16_t check_sum;
+  uint8_t frame_tail;
 } __attribute__((packed));
 
 //Vision 数据包
@@ -482,10 +483,11 @@ struct SendTestData
     float detect_y2;
     float detect_z2;
     uint8_t detect_number2;
-    uint8_t reserve[8];
+    uint8_t reserve[7];
   } __attribute__((packed)) data;
 
   uint16_t check_sum;
+  uint8_t frame_tail;
 } __attribute__((packed));
 
 /********************************************************/
