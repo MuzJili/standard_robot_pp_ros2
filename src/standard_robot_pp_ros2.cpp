@@ -138,6 +138,13 @@ void StandardRobotPpRos2Node::getParams()
   auto sb = StopBits::ONE;
 
   try {
+    nav_k_ = declare_parameter<float>("nav_k", 1.0);
+  } catch (rclcpp::ParameterTypeException & ex) {
+    RCLCPP_ERROR(get_logger(), "The nav k provided was invalid");
+    throw ex;
+  }
+
+  try {
     device_name_ = declare_parameter<std::string>("device_name", "");
   } catch (rclcpp::ParameterTypeException & ex) {
     RCLCPP_ERROR(get_logger(), "The device name provided was invalid");
@@ -490,9 +497,8 @@ void StandardRobotPpRos2Node::sendData()
 
 void StandardRobotPpRos2Node::NavCmdCallback(const pb_rm_interfaces::msg::NavigationCmd::SharedPtr msg)
 {
-  send_test_data_.data.vx = msg->twist.linear.x;
-  send_test_data_.data.vy = msg->twist.linear.y;
-
+  send_test_data_.data.vx = msg->twist.linear.x * nav_k_;
+  send_test_data_.data.vy = msg->twist.linear.y * nav_k_;
   send_test_data_.data.chassis_status = msg->chassis_status;
 }
 
