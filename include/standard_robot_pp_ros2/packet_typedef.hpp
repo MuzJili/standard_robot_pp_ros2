@@ -21,7 +21,8 @@
 
 namespace standard_robot_pp_ros2
 {
-const uint8_t SOF_HEAD = 0xA5;
+const uint8_t SOF_REFREE_HEAD = 0xA5;
+const uint8_t SOF_VISION_HEAD = 0x5A;
 const uint8_t SOF_SEND = 0x5A;
 const uint8_t SOF_TAIL = 0x55;
 

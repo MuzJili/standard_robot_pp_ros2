@@ -16,19 +16,34 @@
 
 namespace checksum
 {
-bool verify_check_sum(std::vector<uint8_t> & pchMessage)
+bool verify_check_sum8(uint8_t * pchMessage, unsigned int dwLength)
+{
+  if (dwLength <= 1) {
+    return false;
+  }
+  uint8_t cSUm = 0;
+  for (uint32_t i = 0; i < dwLength - 1; i++) {
+    cSUm += pchMessage[i];
+  }
+
+  uint8_t fSum = pchMessage[dwLength - 1];
+
+  return cSUm == fSum;
+}
+
+bool verify_check_sum16(std::vector<uint8_t> & pchMessage)
 {
   if (pchMessage.size() <= 2) {
     return false;
   }
   uint16_t cSUm = 0;
-  uint32_t dwLength = pchMessage.size();
-  for (uint32_t i = 0; i < dwLength - 3; i++) {
+  uint32_t dw_length = pchMessage.size();
+  for (uint32_t i = 0; i < dw_length - 2; i++) {
     cSUm += pchMessage[i];
   }
 
-  uint16_t fSum = (static_cast<uint16_t>(pchMessage[dwLength - 3]) & 0xFF) |
-                         (static_cast<uint16_t>(pchMessage[dwLength - 2]) << 8);
+  uint16_t fSum = (static_cast<uint16_t>(pchMessage[dw_length - 2]) & 0xFF) |
+                         (static_cast<uint16_t>(pchMessage[dw_length - 1]) << 8);
 
   return cSUm == fSum;
 }

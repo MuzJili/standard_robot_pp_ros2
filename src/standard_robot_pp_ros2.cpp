@@ -333,6 +333,7 @@ void StandardRobotPpRos2Node::receiveData()
 
   int time_waiting = 0;
   int sof_err_count = 0;
+  bool is_checksum = false;
 
   while (rclcpp::ok()) {
     // 串口状态
@@ -347,11 +348,15 @@ void StandardRobotPpRos2Node::receiveData()
         RCLCPP_WARN(get_logger(), "Receive: SOF error count over 64! SOF_HEAD not found. Data receive fail.");
         RCLCPP_WARN(get_logger(), "Set usb is not ok!");
         is_usb_ok_ = false;
+        sof_err_count = 0;
       }
 
       serial_driver_->port()->receive(sof);
+      is_checksum = true;
 
-      if (sof[0] != SOF_HEAD) {
+      if (sof[0] == SOF_REFREE_HEAD) {
+        is_checksum = false;
+      }else if (sof[0] != SOF_REFREE_HEAD && sof[0] != SOF_VISION_HEAD) {
         sof_err_count++;
         RCLCPP_INFO(get_logger(), "Finding sof, cnt=%d", sof_err_count);
         continue;
@@ -367,14 +372,23 @@ void StandardRobotPpRos2Node::receiveData()
       header_frame_buf.insert(header_frame_buf.begin(), sof[0]);  // 添加 sof
       HeaderFrame header_frame = fromVector<HeaderFrame>(header_frame_buf);
 
-      // HeaderFrame CRC8 check
-      bool crc8_ok = crc8::verify_CRC8_check_sum(
+      // HeaderFrame CRC8/CHECK_SUM8 check
+      if (!is_checksum) {
+        bool crc8_ok = crc8::verify_CRC8_check_sum(
         reinterpret_cast<uint8_t *>(&header_frame), sizeof(header_frame));
-      if (!crc8_ok) {
-        RCLCPP_ERROR(get_logger(), "Header frame CRC8 error!");
-        continue;
+        if (!crc8_ok) {
+          RCLCPP_ERROR(get_logger(), "Header frame CRC8 error!");
+          continue;
+        }
+      }else {
+        bool check_sum8_ok = checksum::verify_check_sum8(
+        reinterpret_cast<uint8_t *>(&header_frame), sizeof(header_frame));
+        if (!check_sum8_ok) {
+          RCLCPP_ERROR(get_logger(), "Header frame check sum error!");
+          continue;
+        }
       }
-
+      
       // crc8_ok 校验正确后读取数据段
       // 根据数据段长度读取数据
       std::vector<uint8_t> data_buf(header_frame.len + 4);  // data_len + cmd_id + crc16
@@ -395,10 +409,18 @@ void StandardRobotPpRos2Node::receiveData()
       data_buf.insert(data_buf.begin(), header_frame_buf.begin(), header_frame_buf.end());
 
       // 整包数据校验
-      bool crc16_ok = crc16::verify_CRC16_check_sum(data_buf);
-      if (!crc16_ok) {
-        RCLCPP_ERROR(get_logger(), "Data segment CRC16 error!");
-        continue;
+      if (!is_checksum) {
+        bool crc16_ok = crc16::verify_CRC16_check_sum(data_buf);
+        if (!crc16_ok) {
+          RCLCPP_ERROR(get_logger(), "Data segment CRC16 error!");
+          continue;
+        }
+      } else {
+        bool check_sum16_ok = checksum::verify_check_sum16(data_buf);
+        if (!check_sum16_ok) {
+          RCLCPP_ERROR(get_logger(), "Data segment check sum error!");
+          continue;
+        }
       }
       
       // crc16_ok 校验正确后根据 cmd_id 解析数据
