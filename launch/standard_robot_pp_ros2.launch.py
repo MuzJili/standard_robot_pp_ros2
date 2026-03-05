@@ -45,6 +45,7 @@ def generate_launch_description():
     use_rviz = LaunchConfiguration("use_rviz")
     use_respawn = LaunchConfiguration("use_respawn")
     log_level = LaunchConfiguration("log_level")
+    vision_debug = LaunchConfiguration("vision_debug")
 
     # Create our own temporary YAML files that include substitutions
     configured_params = ParameterFile(
@@ -99,6 +100,12 @@ def generate_launch_description():
         "log_level", default_value="info", description="log level"
     )
 
+    declare_vision_debug_cmd = DeclareLaunchArgument(
+        "vision_debug",
+        default_value="False",
+        description="",
+    )
+
 
     # Specify the actions
     bringup_cmd_group = GroupAction(
@@ -120,6 +127,7 @@ def generate_launch_description():
                     "use_rviz": use_rviz,
                     "use_respawn": use_respawn,
                     "log_level": log_level,
+                    "vision_debug": vision_debug,
                 }.items(),
             ),
             Node(
@@ -148,6 +156,7 @@ def generate_launch_description():
     ld.add_action(declare_use_rviz_cmd)
     ld.add_action(declare_use_respawn_cmd)
     ld.add_action(declare_log_level_cmd)
+    ld.add_action(declare_vision_debug_cmd)
 
     # Add the actions to launch all of nodes
     ld.add_action(bringup_cmd_group)
